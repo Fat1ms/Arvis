@@ -1,0 +1,274 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Environment files - keep .env.example, ignore .env
+.env
+!.env.example
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Database
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Models and Cache (large files)
+models/*.zip
+models/vosk-model-*/
+models/silero-models/
+cache/
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Audio files
+*.wav
+*.mp3
+*.ogg
+*.flac
+
+# Database files
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration with sensitive data
+config/secrets.json
+.env.local
+.env.production
+
+# OS specific
+# Windows
+*.lnk
+*.exe
+*.msi
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+
+# Linux
+*~
+
+# PyQt generated files
+ui_*.py
+*_rc.py
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Editor temporary files
+.#*
+#*#
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Application specific
+*.arvis.lock
+.arvis_session
+
+# Configuration (may contain API keys and user settings)
+.env
+config/config.json
+*.key
+*.secret
+
+# Preserve example configs
+!config/config.json.example
+!config/config.json.remote_auth_example
+
+# Audio files
+*.wav
+*.mp3
+*.flac
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+
+# Installation marker
+venv/pyvenv.cfg.installed
+
+# === ARVIS SPECIFIC ===
+
+# Logs (keep structure, ignore content)
+logs/*.log
+!logs/README.md
+
+# Temporary processing files
+temp/*
+!temp/README.md
+
+# User data (keep structure)
+data/*.db
+data/cache/
+!data/README.md
+
+# Large model files (downloaded locally)
+models/*.zip
+models/*/
+!models/README.md
+
+# Generated audio files
+*.generated.wav
+*.tts.wav
+*.stt.wav
+
+# User configuration with API keys
+config/config.json
+!config/config.json.example
+
+# Server authentication secrets and databases
+server/.env
+server/data/
+server/logs/
+!server/data/.gitkeep
+!server/logs/.gitkeep
+server/*.db
+server/*.sqlite3
+
+# Performance data
+*.performance.json
+diagnostic_*.txt
+
+# Test files
+tests/
+test_*.py
+
+# === DOCUMENTATION EXCLUSIONS ===
+# Internal/work-in-progress documentation (не для GitHub)
+
+# Work session summaries and daily logs
+docs/*SESSION*.md
+docs/*SUMMARY*.md
+docs/DAY*_*.md
+docs/WORK_*.md
+
+# Internal fix reports and analysis
+docs/*FIX*.md
+docs/*REPORT*.md
+docs/*ANALYSIS*.md
+docs/IMPROVEMENTS_*.md
+docs/LOADING_SEQUENCE_*.md
+
+# Internal planning and phase documentation
+docs/PHASE_*.md
+docs/*PLAN*.md
+docs/OLLAMA_MANAGER_SOLUTION.md
+docs/README_UPDATE.md
+docs/COMMIT_MESSAGE.txt
+
+# Keep important public documentation (явно разрешаем)
+!docs/BETA_RELEASE_PLAN.md
+!docs/SECURITY_AUDIT_REPORT.md
+!docs/RBAC_GUIDE.md
+!docs/USER_GUIDE_2FA.md
+!docs/USER_MANAGEMENT_GUIDE.md
+!docs/USER_CHECKLIST.md
+!docs/QUICKSTART_USER_MANAGEMENT.md
+!docs/PRE_COMMIT_GUIDE.md
+!docs/PRE_COMMIT_FIXES.md
+!docs/SECURITY_MIGRATION.md
+!docs/kaldi_wake_word_guide.md
+!docs/SYSTEM_PROMPT_V2.md
+!docs/RELEASE_NOTES_*.md
+!docs/RELEASE_v*.md
+
+# Keep examples folder
+!docs/examples/
+
+# === DEVELOPMENT SCRIPTS (не для конечных пользователей) ===
+# Эти батники используются только разработчиками для подготовки релиза
+check_before_commit.bat
+commit_and_push.bat
+prepare_for_github.bat
+cleanup_project.bat

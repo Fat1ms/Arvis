@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arvis — Регистрация</title>
+</head>
+<body>
+  <h1>Регистрация</h1>
+
+  <form id="registerForm">
+    <div>
+      <label>Username <input name="username" required minlength="3" /></label>
+    </div>
+    <div>
+      <label>Email (опционально) <input name="email" type="email" /></label>
+    </div>
+    <div>
+      <label>Password <input name="password" type="password" required minlength="8" /></label>
+    </div>
+    <button type="submit">Создать аккаунт</button>
+  </form>
+
+  <p><a href="/web/login.html">Уже есть аккаунт? Вход</a></p>
+  <p><a href="/web/index.html">На главную</a></p>
+
+  <pre id="out"></pre>
+
+  <script>
+    const out = document.getElementById('out');
+    const form = document.getElementById('registerForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      out.textContent = '';
+
+      const fd = new FormData(form);
+      const payload = {
+        username: String(fd.get('username') || ''),
+        email: String(fd.get('email') || '') || null,
+        password: String(fd.get('password') || '')
+      };
+
+      const resp = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        out.textContent = JSON.stringify(data, null, 2);
+        return;
+      }
+
+      localStorage.setItem('arvis_token', data.access_token);
+      location.href = '/web/account.html';
+    });
+  </script>
+</body>
+</html>

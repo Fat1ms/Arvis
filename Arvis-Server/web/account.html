@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arvis — Аккаунт</title>
+</head>
+<body>
+  <h1>Аккаунт</h1>
+
+  <div id="userBox"></div>
+
+  <h2>Оплата</h2>
+  <button id="buyStripeOne">Купить (Stripe, разово)</button>
+  <button id="buyStripeSub">Подписка (Stripe)</button>
+  <button id="buyLiqpayOne">Купить (LiqPay, разово)</button>
+
+  <h2>Скачать</h2>
+  <button id="downloadExe">Скачать .exe (временная ссылка)</button>
+
+  <p>
+    <a href="/web/index.html">На главную</a>
+    | <a href="#" id="logout">Выйти</a>
+  </p>
+
+  <pre id="out"></pre>
+
+  <script>
+    const out = document.getElementById('out');
+    const userBox = document.getElementById('userBox');
+
+    function getToken() {
+      return localStorage.getItem('arvis_token') || '';
+    }
+
+    function authHeaders() {
+      const t = getToken();
+      return t ? { 'Authorization': 'Bearer ' + t } : {};
+    }
+
+    async function showMe() {
+      const resp = await fetch('/api/auth/me', { headers: { ...authHeaders() } });
+      if (!resp.ok) {
+        userBox.innerHTML = '<p>Вы не авторизованы. <a href="/web/login.html">Войти</a></p>';
+        return;
+      }
+      const me = await resp.json();
+      userBox.innerHTML = `<p>Вы вошли как <b>${me.username}</b></p>`;
+    }
+
+    async function checkout(provider, mode) {
+      out.textContent = '';
+      const resp = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ provider, mode })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        out.textContent = JSON.stringify(data, null, 2);
+        return;
+      }
+
+      if (provider === 'stripe') {
+        location.href = data.redirect_url;
+        return;
+      }
+
+      // LiqPay: auto-submit form
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = data.form_url;
+      const inpData = document.createElement('input');
+      inpData.type = 'hidden';
+      inpData.name = 'data';
+      inpData.value = data.liqpay_data;
+      const inpSig = document.createElement('input');
+      inpSig.type = 'hidden';
+      inpSig.name = 'signature';
+      inpSig.value = data.liqpay_signature;
+      form.appendChild(inpData);
+      form.appendChild(inpSig);
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    document.getElementById('buyStripeOne').addEventListener('click', () => checkout('stripe', 'one_time'));
+    document.getElementById('buyStripeSub').addEventListener('click', () => checkout('stripe', 'subscription'));
+    document.getElementById('buyLiqpayOne').addEventListener('click', () => checkout('liqpay', 'one_time'));
+
+    document.getElementById('downloadExe').addEventListener('click', async () => {
+      out.textContent = '';
+      const resp = await fetch('/api/downloads/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({})
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        out.textContent = JSON.stringify(data, null, 2);
+        return;
+      }
+      location.href = data.download_url;
+    });
+
+    document.getElementById('logout').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('arvis_token');
+      location.href = '/web/index.html';
+    });
+
+    showMe();
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Arvis Authentication Server Requirements
+# Требования для сервера аутентификации Arvis
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Security & Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+cryptography==42.0.0
+pyotp>=2.9.0  # TOTP for 2FA
+qrcode>=7.4.2  # QR code generation for 2FA setup
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+psycopg2-binary>=2.9.9
+
+# Validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+email-validator>=2.1.1
+
+# Logging & Monitoring
+python-json-logger==2.0.7
+
+# Development & Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
+
+# Payments
+stripe==14.1.0
