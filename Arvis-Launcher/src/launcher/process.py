@@ -35,7 +35,7 @@ class ManagedProcess(QObject):
         if not launch_py.exists():
             return ProcessStartResult(False, f"Не найден файл: {launch_py}")
 
-    # Prefer venv python if present
+        # Prefer venv python if present
         python_exe = self._resolve_client_python(client_root)
         if not python_exe:
             return ProcessStartResult(False, "Не найден Python для запуска клиента (ни venv/.venv, ни системный python).")
@@ -83,10 +83,10 @@ class ManagedProcess(QObject):
                 if p.exists():
                     return str(p)
 
-    # fallback to the same interpreter that runs the launcher
-    import sys
+        # fallback to the same interpreter that runs the launcher
+        import sys
 
-    return sys.executable
+        return sys.executable
 
     def _drain(self) -> None:
         data = bytes(self._proc.readAllStandardOutput()).decode(errors="replace")
