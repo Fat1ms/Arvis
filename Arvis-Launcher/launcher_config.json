@@ -1,0 +1,27 @@
+{
+  "window": {
+    "width": 1000,
+    "height": 650,
+    "x": null,
+    "y": null
+  },
+  "paths": {
+    "client_root": "C:\\Users\\andre\\Arvis\\Arvis-Client-master",
+    "models_dir": null,
+    "logs_dir": null
+  },
+  "update": {
+    "auto_check": true,
+    "branch": "stable",
+    "github_repo": "Fat1ms/Arvis-Client"
+  },
+  "ollama": {
+    "auto_install": true,
+    "default_model": "gemma2:2b",
+    "auto_start": true
+  },
+  "autoscroll_logs": true,
+  "language": "ru",
+  "first_run": true,
+  "installed_version": null
+}

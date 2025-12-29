@@ -1,0 +1,55 @@
+{
+    "app": {
+        "name": "Arvis - AI Assistant",
+        "version": "1.2.1",
+        "debug": false
+    },
+    "startup": {
+        "autostart_ollama": true,
+        "preload_model": true,
+        "minimize_to_tray": true,
+        "autostart_app": false,
+        "ollama_launch_mode": "console"
+    },
+    "llm": {
+        "default_model": "mistral:7b",
+        "ollama_url": "http://127.0.0.1:11434",
+        "temperature": 0.63,
+        "max_tokens": 4096,
+        "stream": true
+    },
+    "tts": {
+        "engine": "silero",
+        "voice": "xenia",
+        "sample_rate": 48000,
+        "device": "cpu",
+        "enabled": true
+    },
+    "stt": {
+        "engine": "vosk",
+        "model_path": "models/vosk-model-ru-0.42",
+        "wake_word": "Арвис",
+        "wake_word_engine": "kaldi"
+    },
+    "auth": {
+        "use_remote_server": true,
+        "remote_server_url": "http://192.168.1.100:8000",
+        "use_storage": true,
+        "session_timeout": 3600,
+        "password_min_length": 8,
+        "max_login_attempts": 5,
+        "lockout_duration": 300
+    },
+    "modules": {
+        "weather_enabled": true,
+        "news_enabled": true,
+        "calendar_enabled": true,
+        "system_control_enabled": true,
+        "voice_activation_enabled": true
+    },
+    "history": {
+        "max_messages": 50,
+        "save_to_file": true,
+        "auto_save_interval": 5
+    }
+}

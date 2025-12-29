@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+
+# Virtual env
+.venv/
+venv/
+ENV/
+
+# Logs
+*.log
+logs/
+
+# Build/packaging
+build/
+dist/
+*.spec
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local data/cache/artifacts
+_publish/
+backups/
+**/backups/
+**/cache/
+**/downloads/
+
+# Local databases
+*.db
+
+# IDE
+.vscode/
+
+# Launcher local artifacts
+Arvis-Launcher/arvis_log_*.txt
+
+# Client local artifacts
+Arvis-Client-master/arvis_*.log

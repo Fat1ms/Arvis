@@ -1,0 +1,29 @@
+{
+    "app": {
+        "name": "Arvis - AI Assistant",
+        "version": "1.5.1",
+        "debug": false
+    },
+    "security": {
+        "auth": {
+            "enabled": true,
+            "require_login": true,
+            "use_remote_server": true,
+            "server_url": "http://192.168.0.107:8000",
+            "strict_server_mode": false,
+            "session_timeout_minutes": 60
+        }
+    },
+    "llm": {
+        "default_model": "mistral:7b",
+        "ollama_url": "http://localhost:11434",
+        "assistant_engine": "ollama",
+        "offline_mode": false
+    },
+    "stt": {
+        "engine": "vosk"
+    },
+    "tts": {
+        "engine": "silero"
+    }
+}

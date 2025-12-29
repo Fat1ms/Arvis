@@ -1,0 +1,34 @@
+﻿# Arvis AI Assistant - Minimal Dependencies
+# Use this file if requirements.txt doesn't work
+
+# GUI Framework
+PyQt6>=6.7.0
+
+# TTS
+pyttsx3>=2.90
+
+# Audio
+soundfile>=0.12.0
+sounddevice>=0.4.6
+numpy<2
+
+# HTTP
+requests>=2.31.0
+urllib3>=2.0.0
+certifi>=2023.0.0
+
+# Security
+pyotp>=2.9.0
+qrcode>=7.4.2
+Pillow>=10.0.0
+pyjwt>=2.8.0
+
+# System
+psutil>=5.9.0
+pywin32>=306; sys_platform == "win32"
+python-dateutil>=2.8.0
+python-dotenv>=1.0.0
+
+# Utilities
+cryptography>=41.0.0
+omegaconf>=2.3.0

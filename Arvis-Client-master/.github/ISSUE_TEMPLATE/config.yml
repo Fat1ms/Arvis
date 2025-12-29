@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/Fat1ms/Arvis-Sentenel/discussions
+    about: Задать вопрос, обсудить идеи или поделиться опытом
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/Fat1ms/Arvis-Sentenel/security/advisories/new
+    about: Сообщить об уязвимости безопасности (НЕ создавайте публичный issue!)

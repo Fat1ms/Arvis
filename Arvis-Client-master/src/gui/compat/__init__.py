@@ -1,0 +1,155 @@
+"""
+GUI Compatibility Module
+Модуль совместимости для GUI слоя
+
+Предоставляет единую точку входа для всех GUI утилит совместимости.
+
+Использование:
+    from src.gui.compat import (
+        QMainWindow, QPushButton, Qt,
+        USING_PYQT6, QT_VERSION
+    )
+
+Язык: Русский + English
+"""
+
+from .qt_compat import (
+    # Информация о версии
+    USING_PYQT6,
+    QT_VERSION,
+    
+    # Основные модули
+    QtCore,
+    QtWidgets,
+    QtGui,
+    
+    # Основные классы
+    Qt,
+    QTimer,
+    Signal,
+    Slot,
+    QThread,
+    QObject,
+    QRect,
+    QSize,
+    QPoint,
+    QEvent,
+    pyqtSignal,
+    pyqtSlot,
+    
+    # Виджеты
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
+    QScrollArea,
+    QMessageBox,
+    QDialog,
+    QComboBox,
+    QSpinBox,
+    QCheckBox,
+    QTextEdit,
+    QPlainTextEdit,
+    QStatusBar,
+    QMenuBar,
+    QMenu,
+    QFileDialog,
+    QProgressBar,
+    QSlider,
+    QDial,
+    
+    # GUI классы
+    QIcon,
+    QColor,
+    QFont,
+    QPixmap,
+    QPainter,
+    QPen,
+    QBrush,
+    QImage,
+    
+    # Функции совместимости
+    align_left,
+    align_right,
+    align_center,
+    align_v_center,
+    align_h_center,
+    wa_translucent_background,
+    wa_no_system_background,
+    wa_stay_on_top,
+    key_press_event,
+    mouse_press_event,
+    close_event,
+    orientation_horizontal,
+    orientation_vertical,
+)
+
+__all__ = [
+    'USING_PYQT6',
+    'QT_VERSION',
+    'QtCore',
+    'QtWidgets',
+    'QtGui',
+    'Qt',
+    'QTimer',
+    'Signal',
+    'Slot',
+    'QThread',
+    'QObject',
+    'QRect',
+    'QSize',
+    'QPoint',
+    'QEvent',
+    'pyqtSignal',
+    'pyqtSlot',
+    'QApplication',
+    'QMainWindow',
+    'QWidget',
+    'QPushButton',
+    'QLabel',
+    'QLineEdit',
+    'QVBoxLayout',
+    'QHBoxLayout',
+    'QGridLayout',
+    'QScrollArea',
+    'QMessageBox',
+    'QDialog',
+    'QComboBox',
+    'QSpinBox',
+    'QCheckBox',
+    'QTextEdit',
+    'QPlainTextEdit',
+    'QStatusBar',
+    'QMenuBar',
+    'QMenu',
+    'QFileDialog',
+    'QProgressBar',
+    'QSlider',
+    'QDial',
+    'QIcon',
+    'QColor',
+    'QFont',
+    'QPixmap',
+    'QPainter',
+    'QPen',
+    'QBrush',
+    'QImage',
+    'align_left',
+    'align_right',
+    'align_center',
+    'align_v_center',
+    'align_h_center',
+    'wa_translucent_background',
+    'wa_no_system_background',
+    'wa_stay_on_top',
+    'key_press_event',
+    'mouse_press_event',
+    'close_event',
+    'orientation_horizontal',
+    'orientation_vertical',
+]

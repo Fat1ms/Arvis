@@ -1,0 +1,82 @@
+# Development dependencies для Arvis AI Assistant
+# Установка: pip install -r requirements-dev.txt
+
+# ==============================================
+# TESTING
+# ==============================================
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+pytest-asyncio>=0.21.0
+pytest-timeout>=2.2.0
+pytest-xdist>=3.5.0  # Параллельный запуск тестов
+pytest-qt>=4.2.0  # Тестирование PyQt5 приложений
+
+# ==============================================
+# CODE QUALITY
+# ==============================================
+# Форматирование
+black>=24.1.1
+isort>=5.13.2
+
+# Линтинг
+flake8>=7.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=24.1.17
+flake8-comprehensions>=3.14.0
+pylint>=3.0.3
+
+# Статическая проверка типов
+mypy>=1.8.0
+types-requests>=2.31.0
+
+# ==============================================
+# SECURITY
+# ==============================================
+bandit>=1.7.6  # Поиск уязвимостей в коде
+safety>=3.0.0  # Проверка зависимостей на CVE
+detect-secrets>=1.4.0  # Поиск секретов в коде
+
+# ==============================================
+# PRE-COMMIT HOOKS
+# ==============================================
+pre-commit>=3.6.0
+
+# ==============================================
+# DOCUMENTATION
+# ==============================================
+sphinx>=7.2.6
+sphinx-rtd-theme>=2.0.0
+myst-parser>=2.0.0  # Поддержка Markdown
+
+# ==============================================
+# DEVELOPMENT TOOLS
+# ==============================================
+# Debugging
+ipdb>=0.13.13
+ipython>=8.20.0
+
+# Monitoring
+memory-profiler>=0.61.0
+py-spy>=0.3.14
+
+# Build tools
+build>=1.0.3
+setuptools>=69.0.3
+wheel>=0.42.0
+
+# ==============================================
+# ADDITIONAL UTILITIES
+# ==============================================
+# Coverage reporting
+coverage[toml]>=7.4.0
+
+# Mock HTTP requests для тестов
+responses>=0.24.1
+requests-mock>=1.11.0
+
+# Fixtures для PyQt тестов
+pytest-qt>=4.3.1
+
+# Временные файлы для тестов
+pytest-datadir>=1.5.0

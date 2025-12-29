@@ -1,0 +1,2 @@
+# Arvis Launcher Requirements
+PyQt6>=6.4.0

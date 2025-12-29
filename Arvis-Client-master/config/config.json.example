@@ -1,0 +1,236 @@
+{
+    "app": {
+        "name": "Arvis - AI Assistant",
+        "version": "1.2.1",
+        "debug": false
+    },
+    "auth": {
+        "use_remote_server": true,
+        "remote_server_url": "http://127.0.0.1:8000",
+        "close_on_login_failure": true
+    },
+    "startup": {
+        "autostart_ollama": true,
+        "preload_model": true,
+        "minimize_to_tray": true,
+        "autostart_app": false,
+        "ollama_launch_mode": "console"
+    },
+    "llm": {
+        "models": [
+            "mistral:7b",
+            "gemma2:2b"
+        ],
+        "default_model": "mistral:7b",
+        "ollama_url": "http://127.0.0.1:11434",
+        "temperature": 0.63,
+        "max_tokens": 4096,
+        "stream": true
+    },
+    "tts": {
+        "engine": "silero",
+        "voice": "aidar",
+        "sample_rate": 48000,
+        "device": "cpu",
+        "enabled": true,
+        "mode": "after_complete",
+        "sapi_enabled": false
+    },
+    "stt": {
+        "engine": "vosk",
+        "model_path": "models/vosk-model-ru-0.42",
+        "prefer_full_model": true,
+        "wake_word": "Арвис",
+        "wake_word_engine": "kaldi",
+        "wake_use_grammar": true,
+        "wake_fuzzy_distance": 1,
+        "wake_accept_jarvis": false,
+        "kaldi_model_path": "models/vosk-model-ru-0.42",
+        "kaldi_wake_words": [
+            "арвис",
+            "арвіс"
+        ],
+        "kaldi_sample_rate": 16000,
+        "kaldi_chunk_size": 2048,
+        "kaldi_cooldown": 1.0,
+        "kaldi_use_grammar": true,
+        "kaldi_debug_log": true,
+        "kaldi_fuzzy_distance": 1
+    },
+    "modules": {
+        "weather_enabled": true,
+        "news_enabled": true,
+        "calendar_enabled": true,
+        "system_control_enabled": true,
+        "voice_activation_enabled": true
+    },
+    "weather": {
+        "api_key": "",
+        "api_url": "http://api.openweathermap.org/data/2.5/weather",
+        "default_city": "Kyiv"
+    },
+    "news": {
+        "api_key": "",
+        "api_url": "https://newsapi.org/v2/top-headlines",
+        "country": "ua",
+        "language": "ru"
+    },
+    "user": {
+        "name": "Пользователь",
+        "city": "Киев"
+    },
+    "audio": {
+        "input_device": null,
+        "output_device": null,
+        "volume": 0.8
+    },
+    "ui": {
+        "simulate_streaming": false,
+        "stream_interval_ms": 50,
+        "stream_chunk": 3,
+        "scroll_throttle_ms": 100,
+        "immediate_response": true,
+        "fast_mode": true
+    },
+    "history": {
+        "max_messages": 50,
+        "save_to_file": true,
+        "auto_save_interval": 5
+    },
+    "logging": {
+        "level": "INFO",
+        "file_logging": true,
+        "mode": "session",
+        "rotation": "size",
+        "max_bytes": 5242880,
+        "backup_count": 7
+    },
+    "language": {
+        "ui": "ru",
+        "speech": "ru"
+    },
+    "paths": {
+        "logs": "logs",
+        "models": "models",
+        "temp": "temp",
+        "data": "data"
+    },
+    "search": {
+        "enabled": true,
+        "api_key": "",
+        "engine_id": "",
+        "results_limit": 3,
+        "region": "ru"
+    },
+    "prompts": {
+        "system": "Вы — {app_name} v{version}, умный и эффективный голосовой помощник для Windows, работающий на базе локальной Large Language Model (LLM) через Ollama. Ваша основная задача — слушать голосовые команды пользователя, выполнять запросы и отвечать чётко, по существу, используя вашу системную интеграцию.\n\nВаша роль и стиль:\nЛичность: вы — дружелюбный, но сфокусированный и точный технический ассистент. Тон уверенный, краткий и полезный.\nГолосовой ввод/вывод (TTS/STT): ответы будут преобразованы в речь (Silero TTS), поэтому избегайте излишней многословности, сложного форматирования и слишком длинных абзацев.\nКонтекст Windows/Системы: вы — ассистент для Windows и умеете: запускать/открывать приложения, файлы и сайты; управлять звуком; давать информацию (погода, новости, календарь). Используете локальную LLM, сфокусированную на технических знаниях, программировании и администрировании.\n\nИнструкции по обработке запросов:\n1) Технические и программные запросы — всегда давайте короткие, рабочие и применимые решения.\n   - Код: предоставляйте готовые фрагменты (Python, Batch, PowerShell, C#, и т.д.) для задач по Windows и общему программированию.\n   - Системные команды: для Windows показывайте команды для CMD/PowerShell.\n   - Объяснения: сложные темы — кратко и на понятных примерах.\n2) Интеграция с модулями Arvis — если запрос подходит под возможности модулей (Погода/Новости/Календарь/Управление системой), отдавайте приоритет им. Подтверждайте действие фразами в стиле: \"Хорошо, проверяю погоду в Киеве.\" или \"Запускаю Блокнот.\"\n3) Формат ответа — будьте лаконичны: обычно 2–3 предложения, больше — только если действительно требуется или это код.\n   Избегайте лишних приветствий/прощаний; переходите сразу к делу. Если нужен контекст — задайте один конкретный уточняющий вопрос.\n\nОграничения и безопасность:\n- Логирование: помните, что все ответы и действия логируются.\n- Безопасность: не давайте инструкции, ведущие к потере данных/поломке системы/нарушению конфиденциальности.   Допустимы безопасные команды управления звуком/файлами по запросу пользователя.\n- Внешние данные: не ссылайтесь на события/данные вне ваших модулей, если это не общий вопрос, на который можно ответить локальной LLM.\n\nСамопроверка перед ответом:\n- Запрос технический/системный?\n- Подходит ли он под модули Погода/Новости/Календарь/Запуск?\n- Достаточно ли краток ответ для TTS?\n\nВажно: отвечайте на русском языке, кратко и по существу. Будьте дружелюбным и полезным."
+    },
+    "security": {
+        "auth": {
+            "enabled": true,
+            "require_login": true,
+            "session_timeout_minutes": 60,
+            "password_policy": {
+                "min_length": 12,
+                "require_uppercase": true,
+                "require_lowercase": true,
+                "require_digit": true,
+                "require_special": true
+            },
+            "lockout": {
+                "max_attempts": 5,
+                "duration_seconds": 600
+            },
+            "two_factor": {
+                "enabled": false,
+                "enforced_roles": [
+                    "admin"
+                ],
+                "remember_devices_minutes": 10080
+            }
+        },
+        "rbac": {
+            "enabled": true,
+            "default_role": "user",
+            "fallback_role": "guest",
+            "enforce_subscriptions": true
+        },
+        "subscriptions": {
+            "enabled": true,
+            "default_tier": "standard",
+            "guest_tier": "free",
+            "tiers": {
+                "free": {
+                    "title": "Free",
+                    "role": "guest",
+                    "limits": {
+                        "requests_per_minute": 10,
+                        "concurrent_tasks": 1
+                    }
+                },
+                "standard": {
+                    "title": "Standard",
+                    "role": "user",
+                    "limits": {
+                        "requests_per_minute": 30,
+                        "concurrent_tasks": 2
+                    }
+                },
+                "pro": {
+                    "title": "Pro",
+                    "role": "power_user",
+                    "limits": {
+                        "requests_per_minute": 60,
+                        "concurrent_tasks": 4
+                    }
+                },
+                "enterprise": {
+                    "title": "Enterprise",
+                    "role": "admin",
+                    "limits": {
+                        "requests_per_minute": 120,
+                        "concurrent_tasks": 10
+                    }
+                }
+            },
+            "user_assignments": {},
+            "user_id_assignments": {}
+        },
+        "execution": {
+            "allow_scripts": false,
+            "allow_system_shell": false,
+            "restricted_extensions": [
+                "bat",
+                "cmd",
+                "ps1",
+                "js",
+                "vbs"
+            ]
+        },
+        "settings": {
+            "pin": "",
+            "lock_after_minutes": 15
+        },
+        "ollama": {
+            "bind_address": "127.0.0.1",
+            "allow_external": false,
+            "launch_mode": "console",
+            "auto_restart": true
+        }
+    },
+    "audit": {
+        "enabled": true,
+        "database": "data/audit.db",
+        "max_log_size": 10485760,
+        "max_log_age_days": 90,
+        "log_level": "INFO"
+    },
+    "performance": {
+        "async_operations": true,
+        "http_pool_size": 10,
+        "http_timeout": 6.0,
+        "cache_enabled": true,
+        "cache_timeout": 5.0,
+        "monitoring_enabled": true
+    }
+}

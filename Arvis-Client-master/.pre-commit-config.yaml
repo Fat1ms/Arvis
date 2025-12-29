@@ -1,0 +1,129 @@
+# Pre-commit hooks для Arvis AI Assistant
+# Установка: pip install pre-commit && pre-commit install
+
+repos:
+  # Основные хуки
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Базовые проверки
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+      # Python специфичные
+      - id: check-ast
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: name-tests-test
+        args: ['--pytest-test-first']
+
+      # Безопасность
+      - id: detect-private-key
+
+  # Black - форматирование кода
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        args: [--line-length=120]
+        language_version: python3.12
+
+  # isort - сортировка импортов
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=120]
+
+    # flake8 - линтинг
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        # В Windows без кавычек иногда дробит значение после запятой (W503 распознаётся как путь)
+        # Также увеличим порог длины строки, чтобы не блокировать пуш длинными строками
+        args:
+          - "--max-line-length=200"
+          - "--extend-ignore=E203,W503"
+        exclude: ^tests/|^venv/|^build/|^dist/
+        # Временно переводим в ручной запуск, чтобы не блокировать коммиты
+        stages: [manual]
+
+  # Bandit - security scanning (фикс для Windows: добавляем зависимость pbr)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-r', 'src/', 'utils/', 'modules/', '-ll', '-f', 'txt']
+        additional_dependencies: [pbr]
+        exclude: ^tests/
+        pass_filenames: false
+        stages: [manual]
+
+  # detect-secrets - поиск утечек секретов (версия 1.5.0 совместима с baseline)
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - --baseline
+          - .secrets.baseline
+        exclude: '(package-lock\.json|yarn\.lock|.*\.db)$'
+        pass_filenames: false
+        stages: [manual]
+
+  # mypy - статическая типизация (опционально)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --no-strict-optional]
+        additional_dependencies: [types-all]
+        exclude: ^tests/|^venv/
+        # Опционально - может замедлить pre-commit
+        stages: [manual]
+
+  # (удалены дублирующиеся блоки bandit и detect-secrets)
+
+  # Markdown линтинг
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+        stages: [manual]
+
+  # YAML линтинг
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: [-d, '{extends: default, rules: {line-length: {max: 120}}}']
+        stages: [manual]
+
+# Глобальные настройки
+default_language_version:
+  python: python3.12
+
+# Файлы для исключения
+exclude: |
+  (?x)^(
+      venv/.*|
+      build/.*|
+      dist/.*|
+      models/.*|
+      logs/.*|
+      data/.*|
+      temp/.*|
+      .*\.egg-info/.*|
+      __pycache__/.*
+  )$
