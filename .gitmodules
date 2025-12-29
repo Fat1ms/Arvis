@@ -1,0 +1,4 @@
+[submodule "Arvis-Client"]
+	path = Arvis-Client
+	url = https://github.com/Fat1ms/Arvis-Client.git
+	branch = main

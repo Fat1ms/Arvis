@@ -43,3 +43,6 @@ Arvis-Launcher/arvis_log_*.txt
 
 # Client local artifacts
 Arvis-Client-master/arvis_*.log
+
+# Monorepo: client moved to separate repo
+Arvis-Client-master/
