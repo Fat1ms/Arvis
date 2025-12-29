@@ -27,6 +27,7 @@ Thumbs.db
 
 # Local data/cache/artifacts
 _publish/
+_release_assets/
 backups/
 **/backups/
 **/cache/
