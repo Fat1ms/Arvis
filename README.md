@@ -143,7 +143,8 @@
 
 ---
 <p align="center">
-  <b>[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R11RGKC6)</b>
+  <b>Поддержать проект на Ko-Fi</b>
+  <b>https://ko-fi.com/arvisai</b>
 </p>
 <p align="center">
   <b>⭐ Поставьте звезду, если проект понравился! ⭐</b>
