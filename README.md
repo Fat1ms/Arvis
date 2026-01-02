@@ -138,7 +138,7 @@
 
 ## 📞 Контакты
 
-- 🌐 **Сайт:** [febrifugal-laronda-carbonisable.ngrok-free.dev](https://febrifugal-laronda-carbonisable.ngrok-free.dev/)
+- 🌐 **Сайт:** [febrifugal-laronda-carbonisable.ngrok-free.dev](https://febrifugal-laronda-carbonisable.ngrok-free.dev/)(Может временно не работать)
 - 📧 **GitHub:** [@Fat1ms](https://github.com/Fat1ms)
 
 ---
