@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 from ...session import SessionManager, UserSession
+from ...activation import ActivationManager
 from ...styles import (
     COLORS,
     PAGE_TITLE_STYLE,
@@ -34,16 +35,21 @@ from ...styles import (
 )
 
 
+from ..dialogs import ActivationStatusWidget
+
+
 class AccountPage(QWidget):
     """Account management page"""
     
     def __init__(
         self,
         session_manager: SessionManager,
+        activation_manager: ActivationManager = None,
         parent: Optional[QWidget] = None
     ):
         super().__init__(parent)
         self.session_manager = session_manager
+        self.activation_manager = activation_manager
         
         self._build_ui()
         self._connect_signals()
@@ -64,8 +70,16 @@ class AccountPage(QWidget):
         subtitle.setStyleSheet(PAGE_SUBTITLE_STYLE)
         layout.addWidget(subtitle)
         
-        # Stacked widget for login/profile views
+        # Activation status widget (if activation manager provided)
+        self.activation_widget = None
+        if self.activation_manager:
+            self.activation_widget = ActivationStatusWidget(self.activation_manager, self)
+            self.activation_widget.deactivate_requested.connect(self._on_deactivate_requested)
+            layout.addWidget(self.activation_widget)
+        
+        # Stacked widget for login/profile views (hidden - not used currently)
         self.stack = QStackedWidget()
+        self.stack.setVisible(False)  # Hide login/profile stack
         
         # Login view
         self.login_widget = self._build_login_view()
@@ -535,3 +549,15 @@ class AccountPage(QWidget):
                 border-radius: 3px;
             }}
         """)
+    
+    def refresh_activation(self):
+        """Refresh activation widget status"""
+        if self.activation_widget:
+            self.activation_widget.refresh()
+    
+    def _on_deactivate_requested(self):
+        """Handle deactivation request from activation widget"""
+        # Get main window and show activation dialog
+        main_window = self.window()
+        if hasattr(main_window, 'show_activation_dialog'):
+            main_window.show_activation_dialog()

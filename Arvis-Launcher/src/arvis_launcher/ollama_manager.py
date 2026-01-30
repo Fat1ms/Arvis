@@ -222,6 +222,8 @@ class OllamaManager(QObject):
     
     # Signals
     state_changed = pyqtSignal(str)          # OllamaState value
+    # New signal for status with human message: (OllamaState, str)
+    status_changed = pyqtSignal(object, str)
     models_updated = pyqtSignal(list)         # List of OllamaModel
     progress = pyqtSignal(int, str)           # percent, message
     log_line = pyqtSignal(str)
@@ -236,6 +238,9 @@ class OllamaManager(QObject):
         # Auto-refresh timer
         self._refresh_timer = QTimer(self)
         self._refresh_timer.timeout.connect(self.refresh_state)
+
+        # Backwards-compatible signal name for models
+        self.models_changed = self.models_updated
     
     @property
     def state(self) -> OllamaState:
@@ -263,7 +268,9 @@ class OllamaManager(QObject):
         if not ollama_exe:
             self._state = OllamaState.NOT_INSTALLED
             if old_state != self._state:
+                # Emit both legacy and new signals
                 self.state_changed.emit(self._state.value)
+                self.status_changed.emit(self._state, "Ollama not installed")
             return
         
         # Check if running by trying to list models
@@ -289,7 +296,18 @@ class OllamaManager(QObject):
             self._state = OllamaState.UNKNOWN
         
         if old_state != self._state:
+            # Emit legacy string-based state and richer status with message
             self.state_changed.emit(self._state.value)
+            # Map to simple message
+            if self._state == OllamaState.RUNNING:
+                msg = "Running"
+            elif self._state == OllamaState.STOPPED:
+                msg = "Stopped"
+            elif self._state == OllamaState.NOT_INSTALLED:
+                msg = "Not installed"
+            else:
+                msg = "Unknown"
+            self.status_changed.emit(self._state, msg)
         
         self.models_updated.emit(self._models)
     
@@ -331,6 +349,20 @@ class OllamaManager(QObject):
             if model.name == model_name or model.name.startswith(base_name + ":"):
                 return True
         return False
+
+    # Compatibility wrappers expected by UI
+    def is_available(self) -> bool:
+        """Compatibility: whether Ollama is available for model operations."""
+        return self.is_running()
+
+    def get_installed_models(self) -> List[OllamaModel]:
+        """Return list of installed models (compatibility wrapper)."""
+        return self.models
+
+    def check_updates(self) -> List[str]:
+        """Check for model updates. Currently returns empty list as placeholder."""
+        # Placeholder: real implementation could query a registry or compare digests
+        return []
     
     def install_ollama(self):
         """Start Ollama installation"""

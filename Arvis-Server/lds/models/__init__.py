@@ -1,1 +1,0 @@
-# LDS API Models package

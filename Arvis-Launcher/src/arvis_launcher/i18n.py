@@ -21,9 +21,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         # Navigation
         "nav.home": "🏠  Главная",
         "nav.models": "🤖  Модели",
+        "nav.modules": "📦  Модули",
         "nav.settings": "⚙️  Настройки",
         "nav.account": "👤  Аккаунт",
         "nav.debug": "🔧  Отладка",
+        "nav.advanced": "⚙️  Расширенные",
         
         # Home page
         "home.title": "Arvis AI Assistant",
@@ -119,6 +121,30 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "common.info": "Информация",
         "common.success": "Успешно",
         
+        # Activation
+        "activation.title": "Активация Arvis",
+        "activation.enter_key": "Введите ваш ключ активации",
+        "activation.key_placeholder": "ARVIS-XXXX-XXXXXXXX",
+        "activation.email_placeholder": "Email (необязательно)",
+        "activation.activate": "Активировать",
+        "activation.exit": "Выход",
+        "activation.checking": "Проверка ключа...",
+        "activation.success": "Успешно активировано",
+        "activation.required": "Требуется активация",
+        "activation.invalid_key": "Недействительный ключ",
+        "activation.expired": "Срок активации истёк",
+        "activation.offline_mode": "Офлайн режим",
+        "activation.license": "Лицензия",
+        "activation.license_type": "Тип лицензии",
+        "activation.days_remaining": "Осталось дней",
+        "activation.expires_today": "Истекает сегодня",
+        "activation.deactivate": "Деактивировать",
+        "activation.deactivate_confirm": "Вы уверены, что хотите деактивировать?\nПотребуется повторный ввод ключа.",
+        "activation.key_types.beta": "Бета-тестирование",
+        "activation.key_types.monthly": "Месячная подписка",
+        "activation.key_types.permanent": "Постоянная лицензия",
+        "activation.key_types.trial": "Пробный период",
+        
         # News/Welcome
         "news.welcome.title": "Добро пожаловать в Arvis!",
         "news.welcome.desc": "Arvis — это ваш персональный AI-ассистент с голосовым управлением.",
@@ -136,9 +162,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         # Navigation
         "nav.home": "🏠  Home",
         "nav.models": "🤖  Models",
+        "nav.modules": "📦  Modules",
         "nav.settings": "⚙️  Settings",
         "nav.account": "👤  Account",
         "nav.debug": "🔧  Debug",
+        "nav.advanced": "⚙️  Advanced",
         
         # Home page
         "home.title": "Arvis AI Assistant",
@@ -234,6 +262,30 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "common.info": "Information",
         "common.success": "Success",
         
+        # Activation
+        "activation.title": "Arvis Activation",
+        "activation.enter_key": "Enter your activation key",
+        "activation.key_placeholder": "ARVIS-XXXX-XXXXXXXX",
+        "activation.email_placeholder": "Email (optional)",
+        "activation.activate": "Activate",
+        "activation.exit": "Exit",
+        "activation.checking": "Checking key...",
+        "activation.success": "Successfully activated",
+        "activation.required": "Activation required",
+        "activation.invalid_key": "Invalid key",
+        "activation.expired": "Activation has expired",
+        "activation.offline_mode": "Offline mode",
+        "activation.license": "License",
+        "activation.license_type": "License type",
+        "activation.days_remaining": "Days remaining",
+        "activation.expires_today": "Expires today",
+        "activation.deactivate": "Deactivate",
+        "activation.deactivate_confirm": "Are you sure you want to deactivate?\nYou will need to enter the key again.",
+        "activation.key_types.beta": "Beta testing",
+        "activation.key_types.monthly": "Monthly subscription",
+        "activation.key_types.permanent": "Permanent license",
+        "activation.key_types.trial": "Trial period",
+        
         # News/Welcome
         "news.welcome.title": "Welcome to Arvis!",
         "news.welcome.desc": "Arvis is your personal AI assistant with voice control.",
@@ -251,9 +303,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         # Navigation
         "nav.home": "🏠  Головна",
         "nav.models": "🤖  Моделі",
+        "nav.modules": "📦  Модулі",
         "nav.settings": "⚙️  Налаштування",
         "nav.account": "👤  Обліковий запис",
         "nav.debug": "🔧  Відладка",
+        "nav.advanced": "⚙️  Розширені",
         
         # Home page
         "home.title": "Arvis AI Assistant",
@@ -348,6 +402,30 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "common.warning": "Попередження",
         "common.info": "Інформація",
         "common.success": "Успішно",
+        
+        # Activation
+        "activation.title": "Активація Arvis",
+        "activation.enter_key": "Введіть ваш ключ активації",
+        "activation.key_placeholder": "ARVIS-XXXX-XXXXXXXX",
+        "activation.email_placeholder": "Email (необов'язково)",
+        "activation.activate": "Активувати",
+        "activation.exit": "Вихід",
+        "activation.checking": "Перевірка ключа...",
+        "activation.success": "Успішно активовано",
+        "activation.required": "Потрібна активація",
+        "activation.invalid_key": "Недійсний ключ",
+        "activation.expired": "Термін активації закінчився",
+        "activation.offline_mode": "Офлайн режим",
+        "activation.license": "Ліцензія",
+        "activation.license_type": "Тип ліцензії",
+        "activation.days_remaining": "Залишилось днів",
+        "activation.expires_today": "Закінчується сьогодні",
+        "activation.deactivate": "Деактивувати",
+        "activation.deactivate_confirm": "Ви впевнені, що хочете деактивувати?\nПотрібно буде повторно ввести ключ.",
+        "activation.key_types.beta": "Бета-тестування",
+        "activation.key_types.monthly": "Місячна підписка",
+        "activation.key_types.permanent": "Постійна ліцензія",
+        "activation.key_types.trial": "Пробний період",
         
         # News/Welcome
         "news.welcome.title": "Ласкаво просимо до Arvis!",

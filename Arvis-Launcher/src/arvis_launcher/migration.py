@@ -63,6 +63,13 @@ class SettingsMigrator(QObject):
         "security",              # Security settings
         "audit",                 # Audit settings
     }
+    # Keys inside client that are safe to keep and do NOT require restart (runtime)
+    RUNTIME_CLIENT_KEEP = {
+        "tts": {"volume", "speed", "pitch"},
+        "stt": {"mic_index"},
+        "modes": {"live_mode"},
+        "language": {"tts", "stt"},
+    }
     
     def __init__(self, launcher_config_path: Path, parent: Optional[QObject] = None):
         super().__init__(parent)
@@ -148,6 +155,17 @@ class SettingsMigrator(QObject):
                 if "ui" in lang:
                     launcher_data["language"] = lang["ui"]
                     migrated_keys.append("language.ui")
+
+            # TTS: migrate non-runtime keys to launcher, keep runtime keys in client
+            if "tts" in client_data:
+                tts = client_data["tts"]
+                for k, v in tts.items():
+                    if k in self.RUNTIME_CLIENT_KEEP.get("tts", set()):
+                        continue
+                    if "tts" not in launcher_data:
+                        launcher_data["tts"] = {}
+                    launcher_data["tts"][k] = v
+                    migrated_keys.append(f"tts.{k}")
             
             # Server URL
             if "api" in client_data:
@@ -188,6 +206,29 @@ class SettingsMigrator(QObject):
                     launcher_data["logging"] = {}
                 launcher_data["logging"] = logging.copy()
                 migrated_keys.append("logging")
+
+            # STT: migrate non-runtime keys (models etc.) to launcher, keep mic_index
+            if "stt" in client_data:
+                stt = client_data["stt"]
+                for k, v in stt.items():
+                    if k in self.RUNTIME_CLIENT_KEEP.get("stt", set()):
+                        continue
+                    if "stt" not in launcher_data:
+                        launcher_data["stt"] = {}
+                    launcher_data["stt"][k] = v
+                    migrated_keys.append(f"stt.{k}")
+
+            # LLM: move entirely to launcher (managed centrally)
+            if "llm" in client_data:
+                if "llm" not in launcher_data:
+                    launcher_data["llm"] = {}
+                launcher_data["llm"] = client_data["llm"].copy()
+                migrated_keys.append("llm")
+
+            # Modules: move module configuration to launcher
+            if "modules" in client_data:
+                launcher_data["modules"] = client_data["modules"].copy()
+                migrated_keys.append("modules")
             
             # Save launcher config
             self.migration_progress.emit("Сохранение конфигурации лаунчера...")
@@ -229,11 +270,11 @@ class SettingsMigrator(QObject):
         """Remove launcher-specific keys from client config"""
         cleaned = config.copy()
         
-        # Keep only client-relevant parts of language
+        # Keep only minimal client-relevant parts of language
         if "language" in cleaned:
             lang = cleaned["language"]
-            # Keep tts and stt, remove ui (it's now in launcher)
             cleaned["language"] = {
+                # keep runtime language selections
                 "tts": lang.get("tts", "ru"),
                 "stt": lang.get("stt", "ru"),
             }
@@ -252,11 +293,34 @@ class SettingsMigrator(QObject):
         
         # Remove user section (handled by launcher session)
         if "user" in cleaned:
-            # Keep minimal user info for offline mode
             cleaned["user"] = {
                 "username": "Guest",
                 "role": "guest",
             }
+
+        # Clean TTS: keep only runtime keys in client (volume/speed/pitch)
+        if "tts" in cleaned:
+            tts = cleaned["tts"]
+            kept = {}
+            for k in self.RUNTIME_CLIENT_KEEP.get("tts", set()):
+                if k in tts:
+                    kept[k] = tts[k]
+            cleaned["tts"] = kept
+
+        # Clean STT: keep only runtime mic index
+        if "stt" in cleaned:
+            stt = cleaned["stt"]
+            kept = {}
+            for k in self.RUNTIME_CLIENT_KEEP.get("stt", set()):
+                if k in stt:
+                    kept[k] = stt[k]
+            cleaned["stt"] = kept
+
+        # Remove llm and modules from client (moved to launcher)
+        if "llm" in cleaned:
+            del cleaned["llm"]
+        if "modules" in cleaned:
+            del cleaned["modules"]
         
         return cleaned
     

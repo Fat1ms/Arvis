@@ -24,11 +24,12 @@ from PyQt6.QtWidgets import (
 from ..config import LauncherConfig
 from ..process import ClientProcess
 from ..installer import Installer
-from ..ollama_manager import OllamaManager
+from ..ollama_manager import OllamaManager, OllamaState
 from ..updater import UpdateManager, get_local_version
 from ..session import SessionManager
 from ..migration import SettingsMigrator
 from ..voice_models import VoiceModelsManager
+from ..activation import ActivationManager
 from ..i18n import tr, set_language
 from ..styles import (
     COLORS,
@@ -47,7 +48,7 @@ from .pages.models_page import ModelsPage
 from .pages.settings_page import SettingsPage
 from .pages.debug_page import DebugPage
 from .pages.account_page import AccountPage
-from .dialogs import MigrationDialog
+from .dialogs import MigrationDialog, ActivationDialog, InstallWizardDialog
 
 
 class LauncherMainWindow(QMainWindow):
@@ -70,6 +71,13 @@ class LauncherMainWindow(QMainWindow):
         # Voice models manager (needs models dir)
         models_dir = config.get_models_dir()
         self.voice_manager = VoiceModelsManager(models_dir, self)
+        
+        # Activation manager
+        self.activation_manager = ActivationManager(
+            config_dir=config.get_config_path().parent,
+            server_url=config.activation.server_url,
+            offline_grace_days=config.activation.offline_grace_days
+        )
         
         # Window setup
         self.setWindowTitle(tr("app.title"))
@@ -254,9 +262,9 @@ class LauncherMainWindow(QMainWindow):
         )
         self.models_page = ModelsPage(self.config, self.ollama_manager, self.voice_manager, self)
         self.settings_page = SettingsPage(self.config, self)
-        self.account_page = AccountPage(self.session_manager, self)
+        self.account_page = AccountPage(self.session_manager, self.activation_manager, self)
         self.debug_page = DebugPage(self.config, self.client_process, self)
-        
+
         self.pages_stack.addWidget(self.home_page)
         self.pages_stack.addWidget(self.models_page)
         self.pages_stack.addWidget(self.settings_page)
@@ -267,7 +275,9 @@ class LauncherMainWindow(QMainWindow):
         """Connect all signals"""
         # Client process
         self.client_process.output_line.connect(self.debug_page.append_log)
+        self.client_process.error_line.connect(self.debug_page.append_log) # Connect error output
         self.client_process.state_changed.connect(self.home_page.on_client_state_changed)
+        self.client_process.state_changed.connect(self._on_client_state_for_auto_hide)
         
         # Installer
         self.installer.progress.connect(self.home_page.on_install_progress)
@@ -276,18 +286,47 @@ class LauncherMainWindow(QMainWindow):
         
         # Ollama
         self.ollama_manager.log_line.connect(self.debug_page.append_log)
-        self.ollama_manager.state_changed.connect(self.models_page.on_ollama_state_changed)
-        self.ollama_manager.models_updated.connect(self.models_page.on_models_updated)
+        # Connect to ModelsPage handlers (use existing method names)
+        # OllamaManager emits simple state string; ModelsPage expects (OllamaState, message)
+        def _map_ollama_state(state_str: str):
+            try:
+                st = OllamaState(state_str)
+            except Exception:
+                st = OllamaState.UNKNOWN
+            if st == OllamaState.RUNNING:
+                msg = tr("models.ollama.running")
+            elif st == OllamaState.STOPPED:
+                msg = tr("models.ollama.stopped")
+            elif st == OllamaState.NOT_INSTALLED:
+                msg = tr("models.ollama.not_installed")
+            else:
+                msg = tr("models.ollama.not_installed")
+            self.models_page._on_ollama_status_changed(st, msg)
+
+        self.ollama_manager.state_changed.connect(_map_ollama_state)
+        self.ollama_manager.models_updated.connect(self.models_page._on_ollama_models_changed)
         
         # Voice models
         self.voice_manager.log_line.connect(self.debug_page.append_log)
-        self.voice_manager.models_updated.connect(self.models_page.on_voice_models_updated)
+        # Wire voice models updates to ModelsPage updater methods
+        self.voice_manager.models_updated.connect(self.models_page._update_stt_combo)
+        self.voice_manager.models_updated.connect(self.models_page._populate_tts_voices)
+        self.voice_manager.models_updated.connect(self.models_page._update_tts_engine_status)
         self.voice_manager.progress.connect(self._on_voice_progress)
         self.voice_manager.operation_finished.connect(self._on_voice_finished)
         
         # Update manager
         self.update_manager.update_available.connect(self.home_page.on_update_available)
         self.update_manager.log_line.connect(self.debug_page.append_log)
+    
+    def _on_client_state_for_auto_hide(self, state: str):
+        """Auto-hide launcher when client starts if enabled"""
+        if state == "running" and self.config.window.auto_hide_on_client_start:
+            if self.config.window.minimize_to_tray:
+                # TODO: Implement system tray support
+                self.hide()
+            else:
+                self.showMinimized()
     
     def _on_voice_progress(self, percent: int, message: str):
         """Handle voice model download progress"""
@@ -307,6 +346,15 @@ class LauncherMainWindow(QMainWindow):
     
     def _on_startup(self):
         """Called after window is shown"""
+        # Check activation first (if enabled)
+        if self.config.activation.enabled:
+            if not self._check_activation():
+                return  # User closed activation dialog - exit app
+        
+        # Check first run - show installation wizard
+        if self.config.first_run:
+            self._show_first_run_wizard()
+        
         # Check installation status
         client_root = self.config.get_client_root()
         
@@ -362,6 +410,92 @@ class LauncherMainWindow(QMainWindow):
             self.config.migration_done = True
             self.config.save()
     
+    def _show_first_run_wizard(self):
+        """Show installation wizard on first run"""
+        self.debug_page.append_log("First run detected - showing installation wizard")
+        
+        dialog = InstallWizardDialog(parent=self)
+        dialog.installation_complete.connect(self._on_first_run_complete)
+        
+        if dialog.exec():
+            self.debug_page.append_log("Installation wizard completed")
+        else:
+            self.debug_page.append_log("Installation wizard cancelled")
+            # Still mark first_run as done to not show again
+            self.config.first_run = False
+            self.config.save()
+    
+    def _on_first_run_complete(self, install_config: dict):
+        """Handle first run wizard completion"""
+        self.debug_page.append_log(f"Installation config: {install_config}")
+        
+        # Update config from wizard
+        if "install_path" in install_config:
+            self.config.paths.client_root = install_config["install_path"]
+        
+        if install_config.get("autostart", False):
+            # Enable autostart
+            from ..autostart import AutostartManager
+            manager = AutostartManager()
+            manager.enable_autostart(minimized=True)
+            self.config.startup.auto_start_with_windows = True
+        
+        # Mark first run as complete
+        self.config.first_run = False
+        self.config.installed_version = install_config.get("version")
+        self.config.save()
+        
+        # Refresh home page
+        client_root = self.config.get_client_root()
+        if client_root:
+            installed = self.installer.is_installed(client_root)
+            self.home_page.set_installed(installed)
+    
+    def _check_activation(self) -> bool:
+        """
+        Check activation status and show dialog if needed
+        
+        Returns:
+            True if activated (or activation disabled), False if user closed dialog
+        """
+        is_valid, message = self.activation_manager.check_activation()
+        
+        if is_valid:
+            self.debug_page.append_log("Activation: OK")
+            return True
+        
+        self.debug_page.append_log(f"Activation required: {message}")
+        
+        # Show activation dialog
+        dialog = ActivationDialog(
+            activation_manager=self.activation_manager,
+            error_message=message if message != "Требуется активация" else None,
+            parent=self
+        )
+        
+        if dialog.exec():
+            # Activation successful
+            status = self.activation_manager.get_status()
+            self.debug_page.append_log(f"Activation successful: {status.get('key_type_name', 'Unknown')}")
+            return True
+        else:
+            # User cancelled - close application
+            self.debug_page.append_log("Activation cancelled by user")
+            QTimer.singleShot(100, self.close)
+            return False
+    
+    def show_activation_dialog(self):
+        """Show activation dialog (can be called from account page)"""
+        dialog = ActivationDialog(
+            activation_manager=self.activation_manager,
+            parent=self
+        )
+        
+        if dialog.exec():
+            # Refresh account page if it has activation widget
+            if hasattr(self.account_page, 'refresh_activation'):
+                self.account_page.refresh_activation()
+
     def _toggle_maximize(self):
         """Toggle maximized state"""
         if self.isMaximized():
@@ -373,18 +507,27 @@ class LauncherMainWindow(QMainWindow):
     
     def _title_mouse_press(self, event):
         """Handle title bar mouse press for dragging"""
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
-            event.accept()
+        try:
+            if event.button() == Qt.MouseButton.LeftButton:
+                # Use globalPosition() for PyQt6
+                global_pos = event.globalPosition().toPoint()
+                self._drag_pos = global_pos - self.frameGeometry().topLeft()
+                event.accept()
+        except Exception:
+            pass
     
     def _title_mouse_move(self, event):
         """Handle title bar mouse move for dragging"""
-        if self._drag_pos and event.buttons() == Qt.MouseButton.LeftButton:
-            if self.isMaximized():
-                self.showNormal()
-                self.btn_maximize.setText("□")
-            self.move(event.globalPosition().toPoint() - self._drag_pos)
-            event.accept()
+        try:
+            if self._drag_pos and event.buttons() == Qt.MouseButton.LeftButton:
+                if self.isMaximized():
+                    self.showNormal()
+                    self.btn_maximize.setText("□")
+                global_pos = event.globalPosition().toPoint()
+                self.move(global_pos - self._drag_pos)
+                event.accept()
+        except Exception:
+            pass
     
     def closeEvent(self, event):
         """Handle window close"""

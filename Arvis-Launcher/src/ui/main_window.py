@@ -1,15 +1,22 @@
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt
+import json
+import subprocess
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QFrame,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QSplitter,
@@ -114,12 +121,173 @@ class LauncherMainWindow(QMainWindow):
     def _page_models(self) -> QWidget:
         w = QWidget()
         layout = QVBoxLayout(w)
-        layout.addWidget(QLabel("Models (Ollama) — скоро"))
-        hint = QLabel("Здесь будет список моделей (ollama list), pull/remove и выбор активных LLM/STT/TTS.")
-        hint.setWordWrap(True)
-        layout.addWidget(hint)
+
+        title = QLabel("Модели")
+        title.setFont(QFont("Segoe UI", 14))
+        layout.addWidget(title)
+
+        # === LLM Section ===
+        llm_group = QGroupBox("LLM (Ollama)")
+        llm_layout = QVBoxLayout(llm_group)
+
+        # Model selector row
+        model_row = QHBoxLayout()
+        model_row.addWidget(QLabel("Активная модель:"))
+        self.llm_combo = QComboBox()
+        self.llm_combo.setMinimumWidth(250)
+        self.llm_combo.setPlaceholderText("Загрузка...")
+        model_row.addWidget(self.llm_combo)
+        
+        self.btn_refresh_models = QPushButton("🔄 Обновить")
+        self.btn_refresh_models.setFixedWidth(100)
+        self.btn_refresh_models.clicked.connect(self._refresh_ollama_models)
+        model_row.addWidget(self.btn_refresh_models)
+        model_row.addStretch(1)
+        llm_layout.addLayout(model_row)
+
+        # Status and actions
+        self.llm_status = QLabel("")
+        llm_layout.addWidget(self.llm_status)
+
+        # Save button
+        btn_row = QHBoxLayout()
+        self.btn_save_model = QPushButton("💾 Сохранить выбор")
+        self.btn_save_model.clicked.connect(self._save_selected_model)
+        btn_row.addWidget(self.btn_save_model)
+        btn_row.addStretch(1)
+        llm_layout.addLayout(btn_row)
+
+        layout.addWidget(llm_group)
+
+        # === Info ===
+        info = QLabel(
+            "💡 Рекомендуемые модели:\n"
+            "• gemma2:2b — быстрая, для слабых ПК\n"
+            "• mistral:7b — баланс скорости и качества\n"
+            "• llama3.1:8b — качественная, требует 8GB+ VRAM\n"
+            "• wizard-vicuna-uncensored — без цензуры\n"
+            "• dolphin-mixtral — умная, без цензуры"
+        )
+        info.setWordWrap(True)
+        info.setStyleSheet("color: #888; margin-top: 10px;")
+        layout.addWidget(info)
+
         layout.addStretch(1)
+
+        # Load models on page creation
+        self._refresh_ollama_models()
+
         return w
+
+    def _refresh_ollama_models(self):
+        """Fetch available models from Ollama"""
+        self.llm_combo.clear()
+        self.llm_combo.setPlaceholderText("Загрузка...")
+        self.llm_status.setText("Получение списка моделей...")
+        
+        try:
+            result = subprocess.run(
+                ["ollama", "list"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+            )
+            
+            if result.returncode != 0:
+                self.llm_status.setText("❌ Ollama не запущена или не установлена")
+                return
+            
+            # Parse output: NAME ID SIZE MODIFIED
+            lines = result.stdout.strip().split('\n')
+            models = []
+            for line in lines[1:]:  # Skip header
+                if line.strip():
+                    parts = line.split()
+                    if parts:
+                        models.append(parts[0])
+            
+            if models:
+                self.llm_combo.addItems(models)
+                self.llm_status.setText(f"✅ Найдено моделей: {len(models)}")
+                
+                # Try to select current model from client config
+                current = self._get_current_model()
+                if current:
+                    idx = self.llm_combo.findText(current)
+                    if idx >= 0:
+                        self.llm_combo.setCurrentIndex(idx)
+            else:
+                self.llm_status.setText("⚠️ Нет установленных моделей. Используйте: ollama pull <model>")
+                
+        except subprocess.TimeoutExpired:
+            self.llm_status.setText("❌ Таймаут при обращении к Ollama")
+        except FileNotFoundError:
+            self.llm_status.setText("❌ Ollama не найдена. Установите ollama.ai")
+        except Exception as e:
+            self.llm_status.setText(f"❌ Ошибка: {e}")
+
+    def _get_current_model(self) -> str:
+        """Get current model from client config"""
+        try:
+            client_root = self.cfg.get_client_root()
+            if client_root:
+                config_path = client_root / "config" / "config.json"
+                if config_path.exists():
+                    with open(config_path, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                    return config.get("llm", {}).get("default_model", "")
+        except Exception:
+            pass
+        return self.cfg.ollama.default_model
+
+    def _save_selected_model(self):
+        """Save selected model to client config"""
+        model = self.llm_combo.currentText()
+        if not model:
+            QMessageBox.warning(self, "Ошибка", "Выберите модель из списка")
+            return
+        
+        client_root = self.cfg.get_client_root()
+        if not client_root:
+            QMessageBox.warning(self, "Ошибка", "Путь к клиенту не настроен")
+            return
+        
+        try:
+            config_path = client_root / "config" / "config.json"
+            
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            else:
+                config = {}
+            
+            # Update LLM section
+            if "llm" not in config:
+                config["llm"] = {}
+            config["llm"]["default_model"] = model
+            
+            # Also update models list if model not in it
+            if "models" not in config["llm"]:
+                config["llm"]["models"] = []
+            if model not in config["llm"]["models"]:
+                config["llm"]["models"].append(model)
+            
+            # Save
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4, ensure_ascii=False)
+            
+            # Also save to launcher config
+            self.cfg.ollama.default_model = model
+            self.cfg.save()
+            
+            self.llm_status.setText(f"✅ Модель '{model}' сохранена!")
+            QMessageBox.information(self, "Успех", f"Модель '{model}' будет использоваться при следующем запуске Arvis")
+            
+        except Exception as e:
+            self.llm_status.setText(f"❌ Ошибка сохранения: {e}")
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить настройки:\n{e}")
 
     def _page_settings(self) -> QWidget:
         w = QWidget()

@@ -1,0 +1,54 @@
+{
+  "language": "ru",
+  "tts": {
+    "engine": "silero",
+    "speaker": "random",
+    "use_local": true,
+    "sample_rate": 48000,
+    "device": "cpu",
+    "preload": true,
+    "enable_fallback": true,
+    "bark_speaker": "v2/ru_speaker_5"
+  },
+  "server": {
+    "url": "http://127.0.0.1:8000",
+    "api_key": null
+  },
+  "ollama": {
+    "auto_start": false,
+    "temperature": 0.7
+  },
+  "logging": {
+    "level": "INFO",
+    "max_size_mb": 10,
+    "backup_count": 5
+  },
+  "stt": {
+    "vosk_model_path": "models/vosk-model-small-ru-0.22"
+  },
+  "llm": {
+    "provider": "ollama",
+    "model": "llama3:8b",
+    "temperature": 0.7,
+    "base_url": "http://127.0.0.1:11434",
+    "assistant_engine": "ollama",
+    "offline_mode": false,
+    "providers": {
+      "search_priority": [
+        "rss",
+        "google_cse",
+        "serpapi"
+      ],
+      "news_priority": [
+        "rss",
+        "gnews",
+        "newsapi"
+      ],
+      "weather_priority": [
+        "open_meteo",
+        "openweathermap"
+      ]
+    },
+    "default_model": "wizard-vicuna-uncensored:7b"
+  }
+}

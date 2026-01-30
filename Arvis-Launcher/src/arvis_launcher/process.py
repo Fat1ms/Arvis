@@ -146,15 +146,19 @@ class ClientProcess(QObject):
     
     def _find_launch_script(self, client_root: Path) -> Optional[Path]:
         """Find the client launch script"""
+        self.output_line.emit(f"[LAUNCHER] Поиск скрипта запуска в: {client_root}")
         # Priority: launch.py > main.py
         for script_name in ("launch.py", "main.py"):
             script = client_root / script_name
             if script.exists():
+                self.output_line.emit(f"[LAUNCHER] Найден скрипт запуска: {script}")
                 return script
+        self.error_line.emit(f"[LAUNCHER] ОШИБКА: Скрипт запуска не найден (launch.py/main.py) в: {client_root}")
         return None
     
     def _find_python(self, client_root: Path) -> Optional[str]:
         """Find Python executable to use"""
+        self.output_line.emit(f"[LAUNCHER] Поиск интерпретатора Python в: {client_root}")
         # 1. Check for venv in client folder
         for venv_name in (".venv", "venv"):
             venv_dir = client_root / venv_name
@@ -167,7 +171,9 @@ class ClientProcess(QObject):
                 python_exe = venv_dir / "bin" / "python"
             
             if python_exe.exists():
+                self.output_line.emit(f"[LAUNCHER] Найден venv Python: {python_exe}")
                 return str(python_exe)
+        self.output_line.emit("[LAUNCHER] venv Python не найден.")
         
         # 2. Check for embedded Python (portable distribution)
         embedded_dir = client_root / "python"
@@ -175,17 +181,20 @@ class ClientProcess(QObject):
             if sys.platform == "win32":
                 python_exe = embedded_dir / "python.exe"
                 if python_exe.exists():
+                    self.output_line.emit(f"[LAUNCHER] Найден встроенный Python: {python_exe}")
                     return str(python_exe)
+        self.output_line.emit("[LAUNCHER] Встроенный Python не найден.")
         
         # 3. Fallback to system Python (not ideal, but better than nothing)
-        # Only if we're sure it exists and works
         try:
             import shutil
             system_python = shutil.which("python") or shutil.which("python3")
             if system_python:
+                self.output_line.emit(f"[LAUNCHER] Найден системный Python: {system_python}")
                 return system_python
         except Exception:
             pass
+        self.error_line.emit("[LAUNCHER] ОШИБКА: Системный Python не найден.")
         
         return None
     

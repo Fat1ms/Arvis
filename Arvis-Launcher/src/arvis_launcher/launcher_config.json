@@ -3,7 +3,9 @@
     "width": 1000,
     "height": 650,
     "x": null,
-    "y": null
+    "y": null,
+    "auto_hide_on_client_start": true,
+    "minimize_to_tray": false
   },
   "paths": {
     "client_root": "C:/Users/andre/Arvis/Arvis-Client-master",
@@ -13,12 +15,33 @@
   "update": {
     "auto_check": true,
     "branch": "stable",
-    "github_repo": "Fat1ms/Arvis-Client"
+    "github_repo": "Fat1ms/Arvis"
   },
   "ollama": {
     "auto_install": true,
     "default_model": "gemma2:2b",
-    "auto_start": true
+    "auto_start": true,
+    "temperature": 0.7
+  },
+  "ollama_server": {
+    "url": "http://127.0.0.1:11434",
+    "launch_mode": "console",
+    "bind_address": "127.0.0.1",
+    "allow_external": false,
+    "auto_restart": true
+  },
+  "api_keys": {
+    "server_api_key": "",
+    "weather_api_key": "",
+    "news_api_key": "",
+    "search_api_key": "",
+    "search_engine_id": ""
+  },
+  "logging": {
+    "level": "INFO",
+    "max_size_mb": 10,
+    "backup_count": 5,
+    "file_logging": true
   },
   "user": {
     "name": "",

@@ -18,6 +18,15 @@ class WindowConfig:
     height: int = 650
     x: Optional[int] = None
     y: Optional[int] = None
+    auto_hide_on_client_start: bool = True  # Hide launcher when client starts
+    minimize_to_tray: bool = False  # Minimize to system tray instead of taskbar
+
+
+@dataclass
+class StartupConfig:
+    """Startup settings"""
+    run_on_system_start: bool = False  # Autostart launcher with Windows
+    auto_start_client: bool = False  # Automatically start Arvis Client when launcher opens
 
 
 @dataclass
@@ -26,6 +35,7 @@ class PathsConfig:
     client_root: Optional[str] = None
     models_dir: Optional[str] = None
     logs_dir: Optional[str] = None
+    client_logs_dir: Optional[str] = None
 
 
 @dataclass
@@ -33,7 +43,7 @@ class UpdateConfig:
     """Update settings"""
     auto_check: bool = True
     branch: str = "stable"  # stable / dev
-    github_repo: str = "Fat1ms/Arvis-Client"
+    github_repo: str = "Fat1ms/Arvis"
 
 
 @dataclass
@@ -42,6 +52,7 @@ class OllamaConfig:
     auto_install: bool = True
     default_model: str = "gemma2:2b"
     auto_start: bool = False
+    temperature: float = 0.7
 
 
 @dataclass
@@ -62,8 +73,47 @@ class LanguageConfig:
 class VoiceModelsConfig:
     """Voice models settings"""
     stt_model: str = ""  # Selected STT model (vosk model folder name)
-    tts_model: str = "v3_1_ru"  # Selected TTS model (silero model name)
+    tts_engine: str = "silero"  # Selected TTS engine (silero, piper, kokoro, styletts2, f5tts, bark)
+    tts_model: str = "v3_1_ru"  # Selected TTS model (engine-specific)
     tts_voice: str = "aidar"  # Selected TTS voice
+
+
+@dataclass
+class ActivationConfig:
+    """Activation settings"""
+    enabled: bool = True  # Whether activation is required
+    server_url: str = "http://localhost:8080"  # Activation server URL
+    check_interval_hours: int = 24  # How often to check online
+    offline_grace_days: int = 7  # Days allowed without online validation
+
+
+@dataclass
+class ApiKeysConfig:
+    """API keys for external services"""
+    server_api_key: str = ""  # Server API key
+    weather_api_key: str = ""  # Weather API key (OpenWeatherMap)
+    news_api_key: str = ""  # News API key
+    search_api_key: str = ""  # Search API key (Google CSE)
+    search_engine_id: str = ""  # Google Search Engine ID
+
+
+@dataclass
+class LoggingConfig:
+    """Logging settings"""
+    level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR
+    max_size_mb: int = 10
+    backup_count: int = 5
+    file_logging: bool = True
+
+
+@dataclass
+class OllamaServerConfig:
+    """Ollama server settings"""
+    url: str = "http://127.0.0.1:11434"
+    launch_mode: str = "console"  # console, background, service
+    bind_address: str = "127.0.0.1"
+    allow_external: bool = False
+    auto_restart: bool = True
 
 
 @dataclass
@@ -74,9 +124,19 @@ class LauncherConfig:
     paths: PathsConfig = field(default_factory=PathsConfig)
     update: UpdateConfig = field(default_factory=UpdateConfig)
     ollama: OllamaConfig = field(default_factory=OllamaConfig)
+    ollama_server: OllamaServerConfig = field(default_factory=OllamaServerConfig)
     user: UserConfig = field(default_factory=UserConfig)
     languages: LanguageConfig = field(default_factory=LanguageConfig)
     voice_models: VoiceModelsConfig = field(default_factory=VoiceModelsConfig)
+    activation: ActivationConfig = field(default_factory=ActivationConfig)
+    startup: StartupConfig = field(default_factory=StartupConfig)
+    api_keys: ApiKeysConfig = field(default_factory=ApiKeysConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
+    # Preserve detailed subsystem configs migrated from client
+    tts: dict = field(default_factory=dict)
+    stt: dict = field(default_factory=dict)
+    llm: dict = field(default_factory=dict)
+    modules: dict = field(default_factory=dict)
     
     # UI preferences
     autoscroll_logs: bool = True
@@ -165,6 +225,8 @@ class LauncherConfig:
             self.window.height = int(w.get("height", self.window.height))
             self.window.x = w.get("x")
             self.window.y = w.get("y")
+            self.window.auto_hide_on_client_start = bool(w.get("auto_hide_on_client_start", self.window.auto_hide_on_client_start))
+            self.window.minimize_to_tray = bool(w.get("minimize_to_tray", self.window.minimize_to_tray))
         
         # Paths config
         if "paths" in data and isinstance(data["paths"], dict):
@@ -172,6 +234,7 @@ class LauncherConfig:
             self.paths.client_root = p.get("client_root", self.paths.client_root)
             self.paths.models_dir = p.get("models_dir")
             self.paths.logs_dir = p.get("logs_dir")
+            self.paths.client_logs_dir = p.get("client_logs_dir")
         
         # Update config
         if "update" in data and isinstance(data["update"], dict):
@@ -186,6 +249,37 @@ class LauncherConfig:
             self.ollama.auto_install = bool(o.get("auto_install", self.ollama.auto_install))
             self.ollama.default_model = str(o.get("default_model", self.ollama.default_model))
             self.ollama.auto_start = bool(o.get("auto_start", self.ollama.auto_start))
+            # LLM temperature for Ollama provider
+            try:
+                self.ollama.temperature = float(o.get("temperature", self.ollama.temperature))
+            except Exception:
+                pass
+        
+        # Ollama server config
+        if "ollama_server" in data and isinstance(data["ollama_server"], dict):
+            o = data["ollama_server"]
+            self.ollama_server.url = str(o.get("url", self.ollama_server.url))
+            self.ollama_server.launch_mode = str(o.get("launch_mode", self.ollama_server.launch_mode))
+            self.ollama_server.bind_address = str(o.get("bind_address", self.ollama_server.bind_address))
+            self.ollama_server.allow_external = bool(o.get("allow_external", self.ollama_server.allow_external))
+            self.ollama_server.auto_restart = bool(o.get("auto_restart", self.ollama_server.auto_restart))
+        
+        # API keys config
+        if "api_keys" in data and isinstance(data["api_keys"], dict):
+            a = data["api_keys"]
+            self.api_keys.server_api_key = str(a.get("server_api_key", self.api_keys.server_api_key))
+            self.api_keys.weather_api_key = str(a.get("weather_api_key", self.api_keys.weather_api_key))
+            self.api_keys.news_api_key = str(a.get("news_api_key", self.api_keys.news_api_key))
+            self.api_keys.search_api_key = str(a.get("search_api_key", self.api_keys.search_api_key))
+            self.api_keys.search_engine_id = str(a.get("search_engine_id", self.api_keys.search_engine_id))
+        
+        # Logging config
+        if "logging" in data and isinstance(data["logging"], dict):
+            l = data["logging"]
+            self.logging.level = str(l.get("level", self.logging.level))
+            self.logging.max_size_mb = int(l.get("max_size_mb", self.logging.max_size_mb))
+            self.logging.backup_count = int(l.get("backup_count", self.logging.backup_count))
+            self.logging.file_logging = bool(l.get("file_logging", self.logging.file_logging))
         
         # User config
         if "user" in data and isinstance(data["user"], dict):
@@ -205,6 +299,30 @@ class LauncherConfig:
             self.voice_models.stt_model = str(v.get("stt_model", self.voice_models.stt_model))
             self.voice_models.tts_model = str(v.get("tts_model", self.voice_models.tts_model))
             self.voice_models.tts_voice = str(v.get("tts_voice", self.voice_models.tts_voice))
+
+        # Preserve raw subsystem configs if present (tts/stt/llm/modules)
+        if "tts" in data and isinstance(data["tts"], dict):
+            self.tts = data["tts"].copy()
+        if "stt" in data and isinstance(data["stt"], dict):
+            self.stt = data["stt"].copy()
+        if "llm" in data and isinstance(data["llm"], dict):
+            self.llm = data["llm"].copy()
+        if "modules" in data and isinstance(data["modules"], dict):
+            self.modules = data["modules"].copy()
+        
+        # Activation config
+        if "activation" in data and isinstance(data["activation"], dict):
+            a = data["activation"]
+            self.activation.enabled = bool(a.get("enabled", self.activation.enabled))
+            self.activation.server_url = str(a.get("server_url", self.activation.server_url))
+            self.activation.check_interval_hours = int(a.get("check_interval_hours", self.activation.check_interval_hours))
+            self.activation.offline_grace_days = int(a.get("offline_grace_days", self.activation.offline_grace_days))
+        
+        # Startup config
+        if "startup" in data and isinstance(data["startup"], dict):
+            s = data["startup"]
+            self.startup.run_on_system_start = bool(s.get("run_on_system_start", self.startup.run_on_system_start))
+            self.startup.auto_start_client = bool(s.get("auto_start_client", self.startup.auto_start_client))
         
         # Other settings
         self.autoscroll_logs = bool(data.get("autoscroll_logs", self.autoscroll_logs))
@@ -232,11 +350,14 @@ class LauncherConfig:
                 "height": self.window.height,
                 "x": self.window.x,
                 "y": self.window.y,
+                "auto_hide_on_client_start": self.window.auto_hide_on_client_start,
+                "minimize_to_tray": self.window.minimize_to_tray,
             },
             "paths": {
                 "client_root": self.paths.client_root,
                 "models_dir": self.paths.models_dir,
                 "logs_dir": self.paths.logs_dir,
+                "client_logs_dir": self.paths.client_logs_dir,
             },
             "update": {
                 "auto_check": self.update.auto_check,
@@ -247,6 +368,27 @@ class LauncherConfig:
                 "auto_install": self.ollama.auto_install,
                 "default_model": self.ollama.default_model,
                 "auto_start": self.ollama.auto_start,
+                "temperature": self.ollama.temperature,
+            },
+            "ollama_server": {
+                "url": self.ollama_server.url,
+                "launch_mode": self.ollama_server.launch_mode,
+                "bind_address": self.ollama_server.bind_address,
+                "allow_external": self.ollama_server.allow_external,
+                "auto_restart": self.ollama_server.auto_restart,
+            },
+            "api_keys": {
+                "server_api_key": self.api_keys.server_api_key,
+                "weather_api_key": self.api_keys.weather_api_key,
+                "news_api_key": self.api_keys.news_api_key,
+                "search_api_key": self.api_keys.search_api_key,
+                "search_engine_id": self.api_keys.search_engine_id,
+            },
+            "logging": {
+                "level": self.logging.level,
+                "max_size_mb": self.logging.max_size_mb,
+                "backup_count": self.logging.backup_count,
+                "file_logging": self.logging.file_logging,
             },
             "user": {
                 "name": self.user.name,
@@ -260,6 +402,21 @@ class LauncherConfig:
                 "stt_model": self.voice_models.stt_model,
                 "tts_model": self.voice_models.tts_model,
                 "tts_voice": self.voice_models.tts_voice,
+            },
+            "activation": {
+                "enabled": self.activation.enabled,
+                "server_url": self.activation.server_url,
+                "check_interval_hours": self.activation.check_interval_hours,
+                "offline_grace_days": self.activation.offline_grace_days,
+            },
+            # Preserve subsystem configs (if migration populated them)
+            "tts": self.tts,
+            "stt": self.stt,
+            "llm": self.llm,
+            "modules": self.modules,
+            "startup": {
+                "run_on_system_start": self.startup.run_on_system_start,
+                "auto_start_client": self.startup.auto_start_client,
             },
             "autoscroll_logs": self.autoscroll_logs,
             "language": self.languages.ui,  # Backward compat
@@ -291,3 +448,106 @@ class LauncherConfig:
         if self.paths.logs_dir:
             return Path(self.paths.logs_dir)
         return self._get_launcher_dir() / "logs"
+
+    def get(self, key: str, default=None):
+        """Get a config value by dotted key (compatibility with client Config API)."""
+        # Build a dict representation similar to save()
+        data = {
+            "window": {
+                "width": self.window.width,
+                "height": self.window.height,
+                "x": self.window.x,
+                "y": self.window.y,
+                "auto_hide_on_client_start": self.window.auto_hide_on_client_start,
+                "minimize_to_tray": self.window.minimize_to_tray,
+            },
+            "paths": {
+                "client_root": self.paths.client_root,
+                "models_dir": self.paths.models_dir,
+                "logs_dir": self.paths.logs_dir,
+            },
+            "update": {
+                "auto_check": self.update.auto_check,
+                "branch": self.update.branch,
+                "github_repo": self.update.github_repo,
+            },
+            "ollama": {
+                "auto_install": self.ollama.auto_install,
+                "default_model": self.ollama.default_model,
+                "auto_start": self.ollama.auto_start,
+                "temperature": self.ollama.temperature,
+            },
+            "user": {"name": self.user.name, "city": self.user.city},
+            "languages": {"ui": self.languages.ui, "speech": self.languages.speech},
+            "voice_models": {
+                "stt_model": self.voice_models.stt_model,
+                "tts_engine": self.voice_models.tts_engine,
+                "tts_model": self.voice_models.tts_model,
+                "tts_voice": self.voice_models.tts_voice,
+            },
+            "activation": {
+                "enabled": self.activation.enabled,
+                "server_url": self.activation.server_url,
+                "check_interval_hours": self.activation.check_interval_hours,
+                "offline_grace_days": self.activation.offline_grace_days,
+            },
+            "tts": self.tts,
+            "stt": self.stt,
+            "llm": self.llm,
+            "modules": self.modules,
+            "startup": {
+                "run_on_system_start": self.startup.run_on_system_start,
+                "auto_start_client": self.startup.auto_start_client,
+            },
+            "autoscroll_logs": self.autoscroll_logs,
+            "language": self.languages.ui,
+            "first_run": self.first_run,
+            "installed_version": self.installed_version,
+            "migration_done": self.migration_done,
+        }
+
+        # Support dotted key lookup
+        parts = key.split(".") if key else []
+        node = data
+        for p in parts:
+            if isinstance(node, dict) and p in node:
+                node = node[p]
+            else:
+                return default
+        return node
+    
+    def set(self, key: str, value) -> None:
+        """Set a config value by dotted key (compatibility with client Config API)."""
+        parts = key.split(".") if key else []
+        
+        if not parts:
+            return
+        
+        # Handle top-level keys that map to dataclass attributes
+        if len(parts) == 1:
+            attr_name = parts[0]
+            if hasattr(self, attr_name):
+                setattr(self, attr_name, value)
+            return
+        
+        # Handle nested keys like "tts.engine" or "voice_models.tts_engine"
+        top_level = parts[0]
+        
+        # Map shorthand to full attribute names
+        attr_map = {
+            "tts": "tts",
+            "stt": "stt",
+            "llm": "llm",
+            "modules": "modules",
+            "voice_models": "voice_models",
+        }
+        
+        if top_level in attr_map:
+            attr_name = attr_map[top_level]
+            if not hasattr(self, attr_name) or not isinstance(getattr(self, attr_name), dict):
+                return
+            
+            target_dict = getattr(self, attr_name)
+            sub_key = ".".join(parts[1:])
+            target_dict[sub_key] = value
+

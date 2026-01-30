@@ -1,0 +1,34 @@
+{
+  "language": {
+    "tts": "ru",
+    "stt": "ru"
+  },
+  "tts": {
+    "engine": "piper",
+    "default_engine": "piper",
+    "voice": "ru_RU-irina-medium",
+    "sample_rate": 22050,
+    "device": "cpu",
+    "sapi_enabled": true
+  },
+  "stt": {
+    "mic_index": null
+  },
+  "logging": {
+    "level": "INFO",
+    "max_size_mb": 10,
+    "backup_count": 5
+  },
+  "modes": {
+    "live_mode": false,
+    "live_disable_wake_word": true
+  },
+  "user": {
+    "username": "Guest",
+    "role": "guest"
+  },
+  "api": {
+    "server_url": "http://127.0.0.1:8000",
+    "api_key": null
+  }
+}

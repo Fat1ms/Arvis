@@ -222,12 +222,13 @@ class InstallWorker(QThread):
             return InstallResult(False, "pip не найден в venv")
         
         # Core packages that are always needed
+        # Note: removed numpy<2 restriction as Python 3.12+ only has numpy 2.x
         packages = [
             "PyQt6",
             "pyttsx3",
             "soundfile",
             "sounddevice", 
-            "numpy<2",
+            "numpy",
             "requests",
             "urllib3",
             "certifi",
@@ -256,14 +257,21 @@ class InstallWorker(QThread):
         try:
             # Upgrade pip first
             subprocess.run(
-                [pip_exe, "install", "--upgrade", "pip"],
+                [pip_exe, "install", "--upgrade", "pip", "wheel", "setuptools"],
                 capture_output=True,
                 timeout=120
             )
             
-            # Install packages
+            # Install packages with --only-binary for numpy to avoid compilation
+            # This prevents errors on systems without C compiler
+            install_args = [
+                pip_exe, "install",
+                "--only-binary", "numpy,scipy,pandas",
+                "--prefer-binary",
+            ] + packages
+            
             process = subprocess.Popen(
-                [pip_exe, "install"] + packages,
+                install_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -332,6 +340,7 @@ class InstallWorker(QThread):
                 self.log_line.emit(f"⚠ pip upgrade warning: {upgrade_result.stderr}")
             
             # Install requirements with explicit encoding handling
+            # Use --prefer-binary to avoid compilation issues on systems without C compiler
             self.log_line.emit(f"Запуск: {pip_exe} install -r {req_path}")
             
             # Set environment to use UTF-8
@@ -340,7 +349,9 @@ class InstallWorker(QThread):
             env['PYTHONIOENCODING'] = 'utf-8'
             
             process = subprocess.Popen(
-                [pip_exe, "install", "-r", str(req_path)],
+                [pip_exe, "install", "-r", str(req_path), 
+                 "--prefer-binary",
+                 "--only-binary", "numpy,scipy,pandas,soundfile"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,

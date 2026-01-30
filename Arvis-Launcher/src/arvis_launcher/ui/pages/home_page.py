@@ -183,6 +183,14 @@ class HomePage(QWidget):
         self.btn_install.setMinimumHeight(50)
         self.btn_install.setMinimumWidth(140)
         layout.addWidget(self.btn_install)
+        
+        # Full install wizard button
+        self.btn_install_wizard = QPushButton("🚀 Полная установка")
+        self.btn_install_wizard.setStyleSheet(SECONDARY_BUTTON_STYLE)
+        self.btn_install_wizard.setMinimumHeight(50)
+        self.btn_install_wizard.setMinimumWidth(160)
+        self.btn_install_wizard.setToolTip("Запустить мастер полной установки с выбором опций")
+        layout.addWidget(self.btn_install_wizard)
     
     def _build_progress_section(self):
         """Build progress indicator section"""
@@ -272,6 +280,25 @@ class HomePage(QWidget):
         self.btn_stop.clicked.connect(self._on_stop)
         self.btn_install.clicked.connect(self._on_install)
         self.btn_update.clicked.connect(self._on_update)
+        self.btn_install_wizard.clicked.connect(self._on_install_wizard)
+    
+    def _on_install_wizard(self):
+        """Open full installation wizard"""
+        from ..dialogs import InstallWizardDialog
+        
+        wizard = InstallWizardDialog(self)
+        wizard.installation_complete.connect(self._on_wizard_complete)
+        wizard.exec()
+    
+    def _on_wizard_complete(self, config: dict):
+        """Handle wizard completion"""
+        QMessageBox.information(
+            self,
+            "Установка",
+            f"Конфигурация сохранена!\n\n"
+            f"Путь: {config.get('install_path')}\n"
+            f"Тип: {'Полная' if config.get('install_type') == 'full' else 'Компактная'}"
+        )
     
     def set_installed(self, installed: bool):
         """Set installation state"""

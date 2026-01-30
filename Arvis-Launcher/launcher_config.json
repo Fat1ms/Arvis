@@ -3,25 +3,84 @@
     "width": 1000,
     "height": 650,
     "x": null,
-    "y": null
+    "y": null,
+    "auto_hide_on_client_start": false,
+    "minimize_to_tray": false
   },
   "paths": {
     "client_root": "C:\\Users\\andre\\Arvis\\Arvis-Client-master",
     "models_dir": null,
-    "logs_dir": null
+    "logs_dir": null,
+    "client_logs_dir": null
   },
   "update": {
     "auto_check": true,
     "branch": "stable",
-    "github_repo": "Fat1ms/Arvis-Client"
+    "github_repo": "Fat1ms/Arvis"
   },
   "ollama": {
     "auto_install": true,
     "default_model": "gemma2:2b",
-    "auto_start": true
+    "auto_start": true,
+    "temperature": 0.7
+  },
+  "ollama_server": {
+    "url": "http://127.0.0.1:11434",
+    "launch_mode": "console",
+    "bind_address": "127.0.0.1",
+    "allow_external": false,
+    "auto_restart": true
+  },
+  "api_keys": {
+    "server_api_key": "",
+    "weather_api_key": "",
+    "news_api_key": "",
+    "search_api_key": "",
+    "search_engine_id": ""
+  },
+  "logging": {
+    "level": "DEBUG",
+    "max_size_mb": 10,
+    "backup_count": 5,
+    "file_logging": true
+  },
+  "user": {
+    "name": "Андрей",
+    "city": "Киев"
+  },
+  "languages": {
+    "ui": "ru",
+    "speech": "ru"
+  },
+  "voice_models": {
+    "stt_model": "vosk-model-small-ru-0.22",
+    "tts_model": "ru_RU-irina-medium",
+    "tts_voice": "ru_RU-irina-medium"
+  },
+  "activation": {
+    "enabled": true,
+    "server_url": "http://192.168.0.103:8000",
+    "check_interval_hours": 24,
+    "offline_grace_days": 7
+  },
+  "tts": {
+    "engine": "silero",
+    "model": "v3_1_ru",
+    "voice": "xenia",
+    "speed": "1.0"
+  },
+  "stt": {},
+  "llm": {
+    "model": "Gemma2"
+  },
+  "modules": {},
+  "startup": {
+    "run_on_system_start": false,
+    "auto_start_client": false
   },
   "autoscroll_logs": true,
   "language": "ru",
-  "first_run": true,
-  "installed_version": null
+  "first_run": false,
+  "installed_version": null,
+  "migration_done": true
 }
